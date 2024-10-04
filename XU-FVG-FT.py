@@ -21,7 +21,7 @@ from time import sleep
 # news_zone = 'GB'
 # news_zone = 'EU'
 # news_zone = 'US'
-news_zone = 'ALL'
+news_zone = 'ALL2'
 # news_zone = 'NEW'
 # news_zone = 'CC'
 
@@ -34,6 +34,11 @@ elif news_zone == 'ALL':
              'USDCAD', 'AUDUSD', 'BTCUSD', 'NZDUSD']
 elif news_zone == 'CC':
     currs = ['BTCUSD', 'ETHUSD', 'DOGUSD', 'SOLUSD']
+elif news_zone == 'ALL2':    
+    currs = ['AUDCAD', 'AUDCHF', 'AUDJPY', 'AUDNZD', 'AUDUSD', 'CADCHF', 'CADJPY', 'CHFJPY', 'GBPAUD', 'GBPCAD', 
+               'GBPCHF', 'GBPJPY', 'GBPNZD', 'GBPUSD', 'EURAUD', 'EURCAD', 'EURCHF', 'EURGBP', 'EURJPY', 'EURNZD',
+               'EURUSD', 'NZDCAD', 'NZDCHF', 'NZDJPY', 'NZDUSD', 'USDCAD', 'USDCHF', 'USDCNH', 'USDJPY', 'XAUUSD']#, 'BTCUSD']
+
 else:
     currs = ['AUDUSD','GBPUSD', 'NZDUSD','XAUUSD']
 
@@ -297,7 +302,7 @@ while datetime.datetime.now(tz).hour <= 26:
                 ord_price = new_df.iloc[-2]['low']
                 SL = new_df.iloc[-4]['low']
                 TP = ord_price + ((ord_price - SL) * 1)
-                comm = 'python'
+                comm = 'FVG python'
                 if len(mt5.orders_get(symbol=curr)) > 0:
                     
                     close_pending_order(mt5.orders_get(symbol=curr)[0])
@@ -309,7 +314,7 @@ while datetime.datetime.now(tz).hour <= 26:
                 ord_price = new_df.iloc[-2]['high']
                 SL = new_df.iloc[-4]['high']
                 TP = ord_price - ((ord_price - SL) * 1)
-                comm = 'python'
+                comm = 'FVG python'
                 ord1 = make_order(curr, 2, SL, TP, ord_price, comm)
             
 
@@ -331,6 +336,7 @@ while datetime.datetime.now(tz).hour <= 26:
         if position.profit >= man_tp or position.profit <= man_sl:
             res_check = pd.concat([res.T, res_check], ignore_index=True)
             # res_check.columns = ['symbol', 'profit', 'drawUP', 'drawdown', 'trade_type']
+            res_check.to_csv('fvg1.csv', index=False)
             DU = 0
             DD = 0
             close_result = close_position(position)
@@ -381,6 +387,17 @@ while datetime.datetime.now(tz).hour <= 26:
         set_open_orders = 0
         sleep(2)
         # break
+    
+    # CHECK IF TOTAL PROFIT ON ALL POSITION AND CLOSE 
+    pt = pd.DataFrame(list(mt5.positions_get()),columns=mt5.positions_get()[0]._asdict().keys())
+    # position_id = pt.ticket.item()
+    t_profit = pt['profit'].sum()
+
+    if t_profit > 1000 or t_profit < -1000:
+        # closa = 0
+        # c_loop = c_loop +1
+        for position in positions:
+            close_result = close_position(position)
     
     # # if datetime.datetime.now().minute >= 58:
     # news_time = datetime.datetime.now(tz).replace(hour=datetime.datetime.now(tz).hour + 1, minute=0, second =0)
